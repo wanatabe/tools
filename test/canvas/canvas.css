@@ -1,0 +1,14 @@
+canvas {
+  border: 1px solid #333;
+  margin: 10px 0 0 10px;
+}
+li{
+	float: left;
+	margin-left: 16px;
+	border: 1px solid #666;
+	padding:  6px 12px;
+	text-align: center;
+}
+.active {
+	background-color: aquamarine;
+}
