@@ -1,5 +1,5 @@
 import axios from 'axios'
-import EventEmitter from 'eventemitter3'
+import { EventEmitter } from 'eventemitter3'
 import SocketConnect from './connect'
 import { NetConfig } from './IMType'
 
@@ -15,12 +15,13 @@ export default class IM extends EventEmitter {
   private name?: string
 
   private loginLock = false
+  private event?: any
 
-  public socket //websocket实例
+  public socket: any //websocket实例
   private reconnectCount = 0 // 连接次数
   private reconnectLock = false
 
-  static init(url, name) {
+  static init(url: string, name: string) {
     if (!this.instance) {
       return new IM(url, name)
     }
@@ -32,11 +33,11 @@ export default class IM extends EventEmitter {
     this.net = new URL(url)
     this.net.ssl = url.startsWith('https')
     this.name = name
-    // this.event = new EventEmitter()
+    this.event = new EventEmitter()
 
     this.tryLogin()
     this.connect = this.connect.bind(this)
-    this.on('up-token', this.connect)
+    this.event.on('up-token', this.connect)
   }
 
   private tryLogin() {
@@ -44,7 +45,7 @@ export default class IM extends EventEmitter {
       this.login()
     } catch (error) {
       this.loginLock = false
-      this.emit('login-error', error)
+      this.event.emit('login-error', error)
     }
   }
 
@@ -61,33 +62,35 @@ export default class IM extends EventEmitter {
       this.token = data.token
       this.logger = data.data
       this.loginLock = true
-      this.emit('up-token', data.token)
+      // 更新token
+      this.event.emit('up-token', data.token)
     }
   }
 
   private connect(token: string) {
     this.socket = new SocketConnect(token, this.net)
 
-    this.socket.on('message', (data, sender) => this.emit('message', data, sender))
+    this.socket.on('message', (data: any, sender?: string) => this.event.emit('message', data, sender))
     this.socket.on('open', () => {
-      if (this.reconnectCount === 0) this.emit('connect')
-      else this.emit('reconnected')
+      if (this.reconnectCount === 0) this.event.emit('connect')
+      else this.event.emit('reconnected')
     })
-    this.socket.on('close-close', () => this.emit('disconnect'))
+    this.socket.on('close-close', () => this.event.emit('disconnect'))
     this.socket.on('pre-reconnect', () => {
       if (!this.socket) this.socket.removeAllListeners()
       this.socket = undefined
       if (this.reconnectLock) return
       this.reconnectLock = true
-      this.emit('preReconnect')
+      this.event.emit('preReconnect')
       setTimeout(() => {
         this.token = undefined
-        while (!this.token) {
+        this.loginLock = false
+        if (!this.token) {
           try {
             this.login()
           } catch (e) {
             this.loginLock = false
-            this.emit('login-error', e)
+            this.event.emit('login-error', e)
           }
         }
         this.reconnectLock = false

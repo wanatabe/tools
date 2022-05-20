@@ -2,26 +2,27 @@ import { EventEmitter } from 'eventemitter3'
 import { NetConfig, SocketState } from './IMType'
 
 export default class SocketConnect extends EventEmitter {
-  private token?: string
+  private token?: String
   private net?: NetConfig
-  private state?: number
+  private state?: Number
   private socket: WebSocket
 
-  constructor(token, net) {
+  constructor(token: string, net: NetConfig) {
     super()
     this.token = token
     this.net = net
     this.state = SocketState.close
 
-    const host = net.href.replace(/^http/, 'ws')
-    this.socket = new WebSocket(`${host}/listener?token=${token}`)
+    const protocol = net.ssl ? 'wss://' : 'ws://'
+    const { host } = net
+    this.socket = new WebSocket(`${protocol}${host + '1'}/listener?token=${token}`)
     this.socket.onclose = this.onclose.bind(this, false)
     this.socket.onerror = this.onclose.bind(this, true)
     this.socket.onopen = this.onopen.bind(this)
     this.socket.onmessage = this.onmessage.bind(this)
   }
 
-  onclose(isError, e) {
+  onclose(isError: boolean, e: any) {
     this.state = SocketState.close
     if (isError) {
       this.emit('close-close')
@@ -39,7 +40,7 @@ export default class SocketConnect extends EventEmitter {
     this.state = SocketState.open
     this.emit('open')
   }
-  onmessage(e) {
+  onmessage(e: any) {
     const { sender, data } = JSON.parse(e.data)
     this.emit('message', data, sender)
   }
