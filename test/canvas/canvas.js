@@ -1,5 +1,7 @@
 const list = document.querySelectorAll('li')
 const ul = document.querySelector('ul')
+const imgShow = document.getElementById('imgShow')
+
 ul.addEventListener('click', (event) => {
 	for (let index = 0; index < list.length; index++) {
 		const item = list[index];
@@ -8,8 +10,26 @@ ul.addEventListener('click', (event) => {
 	const activeDom = event.target
 	activeDom.classList.add('active')
 	canvasObj.changeGraphType(activeDom.innerText)
-	if (activeDom.innerText === 'revoke') {
-		canvasObj.revoke()
+	switch (activeDom.innerText) {
+		case 'revoke':
+			canvasObj.revoke()
+			break;
+		case 'save':
+			canvasObj.saveToImg()
+			break;
+		default:
+			break;
+	}
+})
+
+/**
+ * 点击空白处关闭弹框
+ */
+imgShow.addEventListener('click', (event) => {
+	imgShow.classList.remove('show')
+	let firstChild
+	while ((firstChild = imgShow.firstChild)) {
+		firstChild.remove()
 	}
 })
 
@@ -203,6 +223,22 @@ class canvasUtil {
 		if (length > 0) {
 			this.ctx.putImageData(this.imageData[length - 1], 0, 0, 0, 0, this.canvas.width, this.canvas.height)
 		}
+	}
+
+	/**
+	 * 保存为图片
+	 */
+	saveToImg = () => {
+		const imgBase64 = this.canvas.toDataURL()
+		const img = new Image(this.canvas.width, this.canvas.height)
+		img.src = imgBase64
+		console.log('img :>> ', img);
+		imgShow.appendChild(img)
+		imgShow.className = 'show'
+		// 阻止冒泡事件
+		img.addEventListener('click', (ev) => {
+			ev.stopPropagation()
+		})
 	}
 
 	/**
