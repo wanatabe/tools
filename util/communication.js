@@ -12,7 +12,7 @@ export default class Publish {
 	 * @param {string} code 
 	 * @param {any} data 
 	 */
-	setState = (code, data) => {
+	#setState = (code, data) => {
 		this.#state[code] = data
 	}
 
@@ -21,7 +21,7 @@ export default class Publish {
 	 * @param {string} code 
 	 * @returns 
 	 */
-	getState = (code) => {
+	#getState = (code) => {
 		return this.#state[code]
 	}
 
@@ -42,7 +42,7 @@ export default class Publish {
 		if (!this.instance) {
 			this.init()
 		}
-		let sub = this.instance.getState(code)
+		let sub = this.instance.#getState(code)
 		if (!sub) {
 			sub = []
 		}
@@ -61,10 +61,10 @@ export default class Publish {
 		if (!this.instance) {
 			this.init()
 		}
-		let sub = this.instance.getState(code)
+		let sub = this.instance.#getState(code)
 		if (!sub) {
-			this.instance.setState(code, [])
-			sub = this.instance.getState(code)
+			this.instance.#setState(code, [])
+			sub = this.instance.#getState(code)
 		}
 		sub.push(fn)
 	}
