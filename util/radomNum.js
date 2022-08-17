@@ -52,7 +52,6 @@ export default class RadomNum {
 		if (Math.round(Rand * Range) == 0) {
 			return Min + 1;
 		} else if (Math.round(Rand * Max) == Max) {
-			index++;
 			return Max - 1;
 		} else {
 			var num = Min + Math.round(Rand * Range) - 1;
